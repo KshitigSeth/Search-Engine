@@ -54,13 +54,12 @@ def process_and_save_all_pdfs(pdf_directory, output_file):
             doc_id = filename[:-4] # Remove file extension
             processed_docs[doc_id] = tokens
 
-    # Save processed documents as JSON
     with open(output_file, 'w') as f:
         json.dump(processed_docs, f, indent=4)
 
     print(f"\nProcessed data saved to {output_file}\n")
 
 if __name__ == "__main__":
-    pdf_directory = "data"
-    output_file = "processed_docs.json"
+    pdf_directory = "data/PDFs"
+    output_file = "data/processed_docs.json"
     process_and_save_all_pdfs(pdf_directory, output_file)
