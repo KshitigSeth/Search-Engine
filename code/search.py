@@ -54,6 +54,33 @@ def tf_idf_score(term, doc_id, term_frequency, document_frequency, total_docs):
         return 0
     return tf * math.log(total_docs / df)
 
+def phrase_match(query_tokens, inverted_index):
+    """
+    Finds documents where the exact phrase (sequence of terms) appears.
+    :param query_tokens: List of tokens representing the search phrase
+    :param inverted_index: The inverted index dictionary
+    :return: List of document IDs where the exact phrase appears
+    """
+    if not query_tokens:
+        return []
+
+    phrase_docs = set(doc_id for doc_id, _ in inverted_index.get(query_tokens[0], []))
+    for i in range(1, len(query_tokens)):
+        token = query_tokens[i]
+        next_docs = set()
+        
+        for doc_id in phrase_docs:
+            positions = [pos for doc, pos in inverted_index.get(token, []) if doc == doc_id]
+            prev_positions = [pos for doc, pos in inverted_index.get(query_tokens[i - 1], []) if doc == doc_id]
+            if any(pos == prev_pos + 1 for prev_pos in prev_positions for pos in positions):
+                next_docs.add(doc_id)
+
+        phrase_docs = next_docs
+        if not phrase_docs:
+            break
+
+    return list(phrase_docs)
+
 def search(query, inverted_index, term_frequency, document_frequency, total_docs):
     """
     Searches for documents relevant to the query using the inverted index and TF-IDF scoring.
@@ -65,12 +92,20 @@ def search(query, inverted_index, term_frequency, document_frequency, total_docs
     :return: List of document IDs ranked by TF-IDF score
     """
     query_tokens = preprocess_query(query)
+    phrase_docs = phrase_match(query_tokens, inverted_index)
+
     document_scores = defaultdict(float)
 
     for token in query_tokens:
         if token in inverted_index:
             for doc_id, _ in inverted_index[token]:
                 document_scores[doc_id] += tf_idf_score(token, doc_id, term_frequency, document_frequency, total_docs)
+
+    scaler = 1.5 # Arbitrary Value    
+    for doc_id in document_scores:
+            document_scores[doc_id] *= 100 # For better readability
+            if doc_id in phrase_docs:
+                document_scores[doc_id] *= scaler
 
     ranked_docs = sorted(document_scores.items(), key=lambda x: x[1], reverse=True)
     return ranked_docs
@@ -85,7 +120,8 @@ def display_results(ranked_docs):
     else:
         print("\nSearch Results:")
         for doc_id, score in ranked_docs:
-            print(f"Document: {doc_id} | Score: {score}")
+            print(f"Document: {doc_id} | Score: {score:.5f}")
+    print("")
 
 if __name__ == "__main__":
     inverted_index_file = "data/inverted_index.json"
