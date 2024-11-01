@@ -1,11 +1,10 @@
 import os
-from code.preprocess import process_and_save_all_pdfs
-from index import load_processed_docs, build_inverted_index, save_index
-from search import load_index, search, display_results
+from lib.preprocess import process_and_save_all_pdfs
+from lib.index import load_processed_docs, build_inverted_index, save_index
+from lib.search import load_index, search, display_results
 
 def main():
-    # Paths to data files
-    pdf_directory = "data/pdfs"
+    pdf_directory = "data/PDFs"
     processed_docs_file = "data/processed_docs.json"
     inverted_index_file = "data/inverted_index.json"
     term_frequency_file = "data/term_frequency.json"
@@ -33,11 +32,11 @@ def main():
 
     # Step 3: Query interface
     print("Welcome to the Search Engine!")
-    print("Type your search query below, or type 'exit' to quit.\n")
+    print("Type your search query below, or type '$exit$' to quit.\n")
 
     while True:
         query = input("Enter your search query: ")
-        if query.lower() == 'exit':
+        if query.lower() == '$exit$':
             print("Exiting search engine. Goodbye!")
             break
         
