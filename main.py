@@ -40,13 +40,11 @@ def main():
             print("Exiting search engine. Goodbye!")
             break
         
-        # Load indexes for search
         inverted_index = load_index(inverted_index_file)
         term_frequency = load_index(term_frequency_file)
         document_frequency = load_index(document_frequency_file)
         total_docs = len(term_frequency)
 
-        # Perform search and display results
         ranked_docs = search(query, inverted_index, term_frequency, document_frequency, total_docs)
         display_results(ranked_docs)
 
