@@ -22,17 +22,27 @@ def build_inverted_index(docs):
     """
     Builds an inverted index and a term frequency dictionary from the processed documents.
     :param docs: Dictionary of processed documents, where keys are document IDs and values are lists of tokens
-    :return: Inverted index as a dictionary and term frequency dictionary
+    :return: Inverted index, term frequency dictionary, and document frequency dictionary
     """
     inverted_index = defaultdict(list)
     term_frequency = defaultdict(lambda: defaultdict(int))
+    document_frequency = defaultdict(int)
 
     for doc_id, tokens in docs.items():
+        seen_terms = set()
+        total_terms = len(tokens)
         for position, token in enumerate(tokens):
             inverted_index[token].append((doc_id, position))
-            term_frequency[doc_id][token] += 1  # Track frequency of each term in the document
+            term_frequency[doc_id][token] += 1
 
-    return inverted_index, term_frequency
+            if token not in seen_terms:
+                document_frequency[token] += 1
+                seen_terms.add(token)
+        
+        for term in term_frequency[doc_id]:
+            term_frequency[doc_id][term] /= total_terms
+
+    return inverted_index, term_frequency, document_frequency
 
 def save_index(data, output_file):
     """
@@ -51,10 +61,11 @@ if __name__ == "__main__":
     input_file = "data/processed_docs.json"
     inverted_index_file = "data/inverted_index.json"
     term_frequency_file = "data/term_frequency.json"
-    metadata_index_file = "data/metadata_index.json"
+    document_frequency_file = "data/document_frequency.json"
     
     docs = load_processed_docs(input_file)
-    inverted_index, term_frequency = build_inverted_index(docs)
+    inverted_index, term_frequency, document_frequency = build_inverted_index(docs)
     
     save_index(inverted_index, inverted_index_file)
     save_index(term_frequency, term_frequency_file)
+    save_index(document_frequency, document_frequency_file)
